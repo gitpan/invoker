@@ -6,26 +6,26 @@ use 5.010_001;
 use B::Hooks::OP::Check;
 use B::Hooks::EndOfScope;
 
-our $VERSION = "0.29_003";
+our $VERSION = "0.30";
 
-use B::Hooks::Parser;
+use Devel::Declare;
 require XSLoader;
 XSLoader::load(__PACKAGE__, $VERSION);
 
 sub import {
     my ($class) = @_;
 
-    my $parser = B::Hooks::Parser::setup();
+    my $parser = Devel::Declare::setup();
 
-    my $linestr = B::Hooks::Parser::get_linestr();
-    my $offset  = B::Hooks::Parser::get_linestr_offset();
-    B::Hooks::Parser::inject('use B::OPCheck const => check => \&invoker::_check;');
+    my $linestr = Devel::Declare::get_linestr();
+    my $offset  = Devel::Declare::get_linestr_offset();
+    substr($linestr, $offset, 0) = 'use B::OPCheck const => check => \&invoker::_check;';
+    Devel::Declare::set_linestr($linestr);
 
     my $hook = $class->setup;
 
     on_scope_end {
         $class->teardown($hook);
-        B::Hooks::Parser::teardown($parser);
     };
 
     return;
@@ -35,12 +35,12 @@ sub _check {
     my $op = shift;
     return unless ref($op->gv) eq 'B::PV';
 
-    my $linestr = B::Hooks::Parser::get_linestr;
-    my $offset  = B::Hooks::Parser::get_linestr_offset;
+    my $linestr = Devel::Declare::get_linestr;
+    my $offset  = Devel::Declare::get_linestr_offset;
 
     if (substr($linestr, $offset-2, 3) eq '$->') {
-        substr($linestr, $offset-2, 3, '$-->');
-        B::Hooks::Parser::set_linestr($linestr);
+        substr($linestr, $offset-2, 3) = '$-->';
+        Devel::Declare::set_linestr($linestr);
     }
 }
 
@@ -75,7 +75,7 @@ the invoker pragma enables the C<< $-> >> syntax for invoking methods
 on C< $self >, inspired by Perl6's C<< $.method >> invocation.
 
 The module does not inject the C< $self > variable for you.  you are
-encouraged to use it in conjunction with L<self>,
+encouraged to use it in conjunction with L<self>, L<selfvars>,
 <Method::Signatures::Simple>, or other similar modules.
 
 The following syntax works:
@@ -120,6 +120,7 @@ C<$self >.
 =head1 AUTHOR
 
 Chia-liang Kao E<lt>clkao@clkao.orgE<gt>
+Audrey Tang E<lt>audreyt@audreyt.orgE<gt>
 
 =head1 LICENSE
 
