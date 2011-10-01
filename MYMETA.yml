@@ -27,4 +27,4 @@ requires:
   B::OPCheck: 0
   Devel::Declare: 0.006004
   perl: 5.010001
-version: 0.30
+version: 0.31
