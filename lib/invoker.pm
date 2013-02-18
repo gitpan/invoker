@@ -6,7 +6,7 @@ use 5.010_001;
 use B::Hooks::OP::Check;
 use B::Hooks::EndOfScope;
 
-our $VERSION = "0.33";
+our $VERSION = "0.34";
 
 use Devel::Declare;
 require XSLoader;
@@ -64,10 +64,10 @@ invoker - implicit invoker, sort of
     $->bar; # calls $self->bar;
   }
 
-  # use Method::Signatures::Simple
-  # method {
-  #  $->bar # ditto
-  # }
+  use methods-invoker;
+  method {
+    $->bar # ditto
+  }
 
 =head1 DESCRIPTION
 
@@ -127,6 +127,8 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =head1 SEE ALSO
+
+L<methods>
 
 =cut
 
